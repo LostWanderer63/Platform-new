@@ -1,0 +1,137 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   DESIGN TOKENS  ·  Immersive AAA  ·  values are RGB channels
+   Shared surfaces + per-theme accent. Theme swaps via [data-theme].
+   ============================================================ */
+:root {
+  /* surfaces & elevation (shared, near-black with cool tint) */
+  --c-bg-base: 6 7 13;
+  --c-bg-elevated: 13 15 24;
+  --c-surface: 18 21 33;
+  --c-card: 24 28 44;
+  --c-glass: 255 255 255;
+  --c-border: 130 140 178;
+  --c-divider: 80 88 120;
+
+  /* text */
+  --c-text: 237 240 252;
+  --c-text-soft: 170 178 205;
+  --c-text-muted: 112 120 148;
+
+  /* semantic */
+  --c-success: 46 213 142;
+  --c-warning: 255 184 60;
+  --c-danger: 255 86 92;
+  --c-info: 78 160 255;
+
+  /* metals */
+  --c-gold: 240 198 116;
+  --c-silver: 198 206 224;
+  --c-bronze: 205 138 90;
+
+  /* motion */
+  --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* default accent = Aurora */
+  --c-accent: 124 92 255;
+  --c-accent-2: 56 214 255;
+  --c-glow: 110 120 255;
+  --amb-1: 124 92 255;
+  --amb-2: 56 214 255;
+}
+
+/* ---- THEME A · AURORA (electric violet → cyan) ---- */
+[data-theme="aurora"] {
+  --c-accent: 124 92 255;
+  --c-accent-2: 56 214 255;
+  --c-glow: 110 120 255;
+  --amb-1: 124 92 255;
+  --amb-2: 56 214 255;
+}
+
+/* ---- THEME B · MIDNIGHT GOLD (amber luxury) ---- */
+[data-theme="gold"] {
+  --c-accent: 240 196 110;
+  --c-accent-2: 255 148 72;
+  --c-glow: 240 186 120;
+  --amb-1: 240 196 110;
+  --amb-2: 255 122 64;
+}
+
+/* ---- THEME C · EMERALD VAULT (jewel green → teal) ---- */
+[data-theme="emerald"] {
+  --c-accent: 40 212 158;
+  --c-accent-2: 64 232 204;
+  --c-glow: 38 204 152;
+  --amb-1: 40 212 158;
+  --amb-2: 64 200 232;
+}
+
+@layer base {
+  * {
+    border-color: rgb(var(--c-border) / 0.1);
+  }
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply bg-base text-ink font-sans antialiased;
+    background-attachment: fixed;
+  }
+  ::selection {
+    background: rgb(var(--c-accent) / 0.3);
+  }
+  /* focus visible — accessible ring on every interactive */
+  :focus-visible {
+    outline: 2px solid rgb(var(--c-accent));
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+@layer components {
+  /* Solid dark surfaces */
+  .glass {
+    background: rgb(var(--c-bg-elevated));
+    border: 1px solid rgb(var(--c-border) / 0.08);
+  }
+  .glass-hi {
+    background: rgb(var(--c-surface));
+    border: 1px solid rgb(var(--c-border) / 0.12);
+  }
+  /* accent gradient text */
+  .text-gradient {
+    background: linear-gradient(100deg, rgb(var(--c-accent)), rgb(var(--c-accent-2)));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  /* skeleton shimmer */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      rgb(var(--c-glass) / 0.04) 25%,
+      rgb(var(--c-glass) / 0.12) 50%,
+      rgb(var(--c-glass) / 0.04) 75%
+    );
+    background-size: 200% 100%;
+    @apply animate-shimmer rounded-md;
+  }
+}
+
+/* accessibility — respect reduced motion globally */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Game Frame</title>
+    <style>
+      :root { color-scheme: dark; }
+      * { margin: 0; box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        font-family: "Sora", system-ui, sans-serif;
+        background:
+          radial-gradient(120% 90% at 20% 0%, hsla(265, 90%, 60%, 0.35), transparent 55%),
+          radial-gradient(120% 120% at 100% 100%, hsla(190, 95%, 55%, 0.3), transparent 55%),
+          #06070d;
+        color: #edf0fc;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+      }
+      .wrap { text-align: center; padding: 2rem; }
+      .badge {
+        display: inline-flex; align-items: center; gap: .5rem;
+        font-size: .7rem; font-weight: 700; letter-spacing: .15em; text-transform: uppercase;
+        color: #2ed58e; background: rgba(46,213,142,.12);
+        padding: .4rem .8rem; border-radius: 999px;
+      }
+      .dot { width: .5rem; height: .5rem; border-radius: 999px; background: #2ed58e; animation: pulse 1.4s infinite; }
+      @keyframes pulse { 50% { opacity: .3; } }
+      h1 { font-size: clamp(2rem, 6vw, 4rem); font-weight: 800; margin: 1rem 0 .25rem; letter-spacing: -0.02em; }
+      .sub { color: #aab2cd; font-size: .95rem; max-width: 30rem; margin: 0 auto; }
+      .canvas {
+        margin-top: 2rem; width: min(80vw, 520px); aspect-ratio: 16/10;
+        border-radius: 18px; border: 1px solid rgba(255,255,255,.1);
+        background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.02));
+        backdrop-filter: blur(18px);
+        display: grid; place-items: center; gap: 1rem;
+      }
+      .play {
+        width: 76px; height: 76px; border-radius: 999px; border: none; cursor: pointer;
+        background: linear-gradient(100deg, #7c5cff, #38d6ff); color: #06070d;
+        font-size: 1.6rem; display: grid; place-items: center;
+        box-shadow: 0 0 40px -4px rgba(124,92,255,.7); transition: transform .2s;
+      }
+      .play:hover { transform: scale(1.08); }
+      .note { font-size: .72rem; color: #707694; margin-top: 1.5rem; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <span class="badge"><span class="dot"></span> Provider frame · live</span>
+      <h1 id="title">Game</h1>
+      <p class="sub">This frame is where the licensed game client loads via the provider launch URL (iframe / webview).</p>
+      <div class="canvas">
+        <button class="play" aria-label="Start round" onclick="this.textContent='●'">▶</button>
+        <div style="font-size:.8rem;color:#aab2cd">Tap to start round</div>
+      </div>
+      <p class="note">Replace this demo with the real game URL in <code>src/data/mock.ts → game.url</code>.</p>
+    </div>
+    <script>
+      const p = new URLSearchParams(location.search);
+      const name = p.get("name") || "Game";
+      document.getElementById("title").textContent = name;
+      document.title = name + " · Aurora";
+    </script>
+  </body>
+</html>

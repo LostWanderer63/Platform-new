@@ -1,0 +1,13 @@
+{
+  "name": "Aurora — Premium Casino & Sportsbook",
+  "short_name": "Aurora",
+  "description": "Next-generation iGaming platform — casino, live games & sportsbook.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#06070d",
+  "theme_color": "#06070d",
+  "icons": [
+    { "src": "/favicon.svg", "type": "image/svg+xml", "sizes": "any", "purpose": "any maskable" }
+  ]
+}
