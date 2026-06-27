@@ -27,13 +27,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     api
       .get<AdminUser>("/auth/me")
       .then((u) => setUser(STAFF_ROLES.includes(u.role) ? u : null))
-      .catch(() => setUser(null))
+      .catch(() => {
+        setUser(null);
+        localStorage.removeItem("at");
+        localStorage.removeItem("rt");
+      })
       .finally(() => setLoading(false));
   }, []);
 
   const login = useCallback(async (identifier: string, password: string) => {
     // dedicated staff-only endpoint (rejects players server-side)
-    const { user } = await api.post<{ user: AdminUser }>("/auth/admin/login", { identifier, password });
+    const { user, token, refreshToken } = await api.post<{ user: AdminUser; token: string; refreshToken: string }>("/auth/admin/login", { identifier, password });
+    if (token) localStorage.setItem("at", token);
+    if (refreshToken) localStorage.setItem("rt", refreshToken);
     setUser(user);
   }, []);
 
@@ -43,6 +49,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       /* ignore */
     }
+    localStorage.removeItem("at");
+    localStorage.removeItem("rt");
     setUser(null);
   }, []);
 

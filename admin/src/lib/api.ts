@@ -8,14 +8,34 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, init: RequestInit & { _retry?: boolean } = {}): Promise<T> {
+  const token = localStorage.getItem("at");
+  const headers: HeadersInit = {
+    "content-type": "application/json",
+    ...(token ? { authorization: `Bearer ${token}` } : {}),
+    ...(init.headers ?? {}),
+  };
+
   const res = await fetch(API_BASE + path, {
     credentials: "include",
-    headers: { "content-type": "application/json", ...(init.headers ?? {}) },
+    headers,
     ...init,
   });
   if (res.status === 401 && !init._retry && path !== "/auth/refresh" && path !== "/auth/me") {
-    const r = await fetch(API_BASE + "/auth/refresh", { method: "POST", credentials: "include" });
-    if (r.ok) return request<T>(path, { ...init, _retry: true });
+    const rt = localStorage.getItem("rt");
+    const r = await fetch(API_BASE + "/auth/refresh", {
+      method: "POST",
+      credentials: "include",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ refreshToken: rt }),
+    });
+    if (r.ok) {
+      const data = await r.json();
+      if (data.token) {
+        localStorage.setItem("at", data.token);
+        if (data.refreshToken) localStorage.setItem("rt", data.refreshToken);
+        return request<T>(path, { ...init, _retry: true });
+      }
+    }
   }
   const text = await res.text();
   const data = text ? JSON.parse(text) : null;

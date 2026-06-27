@@ -22,17 +22,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .get<ApiUser>("/auth/me")
       // only real players use the player app; ignore staff/distributor sessions
       .then((u) => setUser(u.role === "USER" ? u : null))
-      .catch(() => setUser(null))
+      .catch(() => {
+        setUser(null);
+        localStorage.removeItem("at");
+        localStorage.removeItem("rt");
+      })
       .finally(() => setLoading(false));
   }, []);
 
   const login = useCallback(async (identifier: string, password: string) => {
-    const { user } = await api.post<{ user: ApiUser }>("/auth/login", { identifier, password });
+    const { user, token, refreshToken } = await api.post<{ user: ApiUser; token: string; refreshToken: string }>("/auth/login", { identifier, password });
+    if (token) localStorage.setItem("at", token);
+    if (refreshToken) localStorage.setItem("rt", refreshToken);
     setUser(user);
   }, []);
 
   const register = useCallback(async (data: { username: string; email: string; password: string }) => {
-    const { user } = await api.post<{ user: ApiUser }>("/auth/register", data);
+    const { user, token, refreshToken } = await api.post<{ user: ApiUser; token: string; refreshToken: string }>("/auth/register", data);
+    if (token) localStorage.setItem("at", token);
+    if (refreshToken) localStorage.setItem("rt", refreshToken);
     setUser(user);
   }, []);
 
@@ -42,6 +50,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       /* ignore */
     }
+    localStorage.removeItem("at");
+    localStorage.removeItem("rt");
     setUser(null);
   }, []);
 

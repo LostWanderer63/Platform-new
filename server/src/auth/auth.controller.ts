@@ -54,28 +54,29 @@ export class AuthController {
   async register(@Body() dto: RegisterDto, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const { user, accessToken, refreshToken } = await this.auth.register(dto, this.ctx(req));
     this.setCookies(res, accessToken, refreshToken);
-    return { user };
+    return { user, token: accessToken, refreshToken };
   }
 
   @Post("login")
   async login(@Body() dto: LoginDto, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const { user, accessToken, refreshToken } = await this.auth.login(dto, this.ctx(req));
     this.setCookies(res, accessToken, refreshToken);
-    return { user };
+    return { user, token: accessToken, refreshToken };
   }
 
   @Post("admin/login")
   async adminLogin(@Body() dto: LoginDto, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const { user, accessToken, refreshToken } = await this.auth.adminLogin(dto, this.ctx(req));
     this.setCookies(res, accessToken, refreshToken);
-    return { user };
+    return { user, token: accessToken, refreshToken };
   }
 
   @Post("refresh")
   async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const { accessToken, refreshToken } = await this.auth.refresh(req.cookies?.[REFRESH_COOKIE], this.ctx(req));
+    const rt = req.cookies?.[REFRESH_COOKIE] ?? req.body?.refreshToken;
+    const { accessToken, refreshToken } = await this.auth.refresh(rt, this.ctx(req));
     this.setCookies(res, accessToken, refreshToken);
-    return { ok: true };
+    return { ok: true, token: accessToken, refreshToken };
   }
 
   @Post("logout")
