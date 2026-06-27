@@ -13,6 +13,7 @@
     "prisma:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
     "db:seed": "ts-node prisma/seed.ts",
+    "seed:prod": "prisma db push && ts-node prisma/seed.ts && node prisma/seed-olympus.mjs",
     "db:up": "docker compose up -d db",
     "db:down": "docker compose down"
   },

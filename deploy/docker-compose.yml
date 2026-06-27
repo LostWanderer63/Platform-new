@@ -1,0 +1,67 @@
+# Aurora — full-stack deploy (Postgres + API + Caddy serving 3 static apps)
+# Usage:  cd deploy && cp .env.example .env  (edit it) && ./deploy.sh
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: aurora-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - aurora_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build:
+      context: ../server
+    container_name: aurora-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: "4000"
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}?schema=public
+      CORS_ORIGINS: https://${DOMAIN},https://admin.${DOMAIN}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      JWT_ACCESS_TTL: "900"
+      JWT_REFRESH_TTL: "2592000"
+      COOKIE_DOMAIN: .${DOMAIN}
+      COOKIE_SECURE: "true"
+      OLYMPUS_URL: https://games.${DOMAIN}
+      SIGNUP_BONUS: ${SIGNUP_BONUS:-0}
+    expose:
+      - "4000"
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: aurora-caddy
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./sites/player:/srv/player:ro
+      - ./sites/admin:/srv/admin:ro
+      - ./sites/games:/srv/games:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  aurora_pgdata:
+  caddy_data:
+  caddy_config:

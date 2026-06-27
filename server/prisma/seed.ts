@@ -86,10 +86,25 @@ async function seedGames() {
   console.log(`Seeded ${all.length} games`);
 }
 
+async function seedDevs() {
+  const passwordHash = await argon2.hash("dev12345");
+  for (let i = 1; i <= 5; i++) {
+    const email = `dev${i}@aurora.dev`;
+    if (await prisma.user.findUnique({ where: { email } })) {
+      console.log("Dev exists:", email);
+      continue;
+    }
+    const u = await prisma.user.create({ data: { email, username: `dev${i}`, passwordHash, role: "USER" } });
+    await prisma.wallet.create({ data: { userId: u.id, balance: 10000 } });
+    console.log("Seeded dev:", email, "/ dev12345 ($10,000)");
+  }
+}
+
 async function main() {
   await seedAdmin();
+  await seedDevs();
   // Demo/dummy games removed — the catalog is seeded from real game clients only
-  // (see prisma/seed-olympus.mjs). Re-enable only if you want placeholder games.
+  // (prisma/seed-olympus.mjs). Re-enable only if you want placeholder games.
   // await seedGames();
 }
 

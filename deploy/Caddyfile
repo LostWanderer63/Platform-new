@@ -1,0 +1,33 @@
+{
+	email {$ACME_EMAIL}
+}
+
+# Player app (root domain)
+{$DOMAIN} {
+	root * /srv/player
+	encode gzip
+	try_files {path} /index.html
+	file_server
+}
+
+# Admin / back-office
+admin.{$DOMAIN} {
+	root * /srv/admin
+	encode gzip
+	try_files {path} /index.html
+	file_server
+}
+
+# Olympus game cabinet (iframed by the player). Allow the player to embed it.
+games.{$DOMAIN} {
+	root * /srv/games
+	encode gzip
+	header Content-Security-Policy "frame-ancestors https://{$DOMAIN}"
+	try_files {path} /index.html
+	file_server
+}
+
+# API
+api.{$DOMAIN} {
+	reverse_proxy backend:4000
+}

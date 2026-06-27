@@ -22,8 +22,18 @@ export class AuthController {
   }
 
   private setCookies(res: Response, accessToken: string, refreshToken: string) {
-    const secure = this.config.get("COOKIE_SECURE") === "true";
-    const base = { httpOnly: true, secure, sameSite: "lax" as const };
+    // SameSite=none is required when the apps live on DIFFERENT domains
+    // (e.g. free hosts: *.pages.dev + *.onrender.com); it forces Secure.
+    const sameSite = (this.config.get("COOKIE_SAMESITE") ?? "lax").toLowerCase() as "lax" | "none" | "strict";
+    const secure = this.config.get("COOKIE_SECURE") === "true" || sameSite === "none";
+    const domain = this.config.get("COOKIE_DOMAIN");
+    const base = {
+      httpOnly: true,
+      secure,
+      sameSite,
+      // a shared cookie domain only makes sense for same-site (subdomain) setups
+      ...(sameSite !== "none" && domain && domain !== "localhost" ? { domain } : {}),
+    };
     res.cookie(ACCESS_COOKIE, accessToken, { ...base, maxAge: this.tokens.accessTtl * 1000, path: "/" });
     res.cookie(REFRESH_COOKIE, refreshToken, {
       ...base,
@@ -33,8 +43,11 @@ export class AuthController {
   }
 
   private clearCookies(res: Response) {
-    res.clearCookie(ACCESS_COOKIE, { path: "/" });
-    res.clearCookie(REFRESH_COOKIE, { path: "/api/auth" });
+    const sameSite = (this.config.get("COOKIE_SAMESITE") ?? "lax").toLowerCase();
+    const domain = this.config.get("COOKIE_DOMAIN");
+    const d = sameSite !== "none" && domain && domain !== "localhost" ? { domain } : {};
+    res.clearCookie(ACCESS_COOKIE, { path: "/", ...d });
+    res.clearCookie(REFRESH_COOKIE, { path: "/api/auth", ...d });
   }
 
   @Post("register")
