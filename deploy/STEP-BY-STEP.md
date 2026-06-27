@@ -4,25 +4,23 @@
 
 You have parts in your code. Each goes to ONE host:
 
-| What (folder) | Goes to | You get back |
+Everything lives in ONE GitHub repo (`Platform-new`). You deploy different folders of it.
+
+| What (folder in the repo) | Goes to | You get back |
 |---|---|---|
 | nothing (just create a DB) | **Neon** | a `DATABASE_URL` string |
 | `server/` (backend) | **Render** | `https://aurora-api.onrender.com` |
 | repo root (player app) | **Cloudflare Pages** #1 | `https://aurora-player.pages.dev` |
 | `admin/` (admin app) | **Cloudflare Pages** #2 | `https://aurora-admin.pages.dev` |
-| `wrath-of-olympus` (games) | **Cloudflare Pages** #3 | `https://aurora-games.pages.dev` |
+| `cabinet/` (the 23 games) | **Cloudflare Pages** #3 | `https://aurora-games.pages.dev` |
 
-So: **1 database + 4 deploys** (1 backend, 3 static apps). All free.
+So: **1 database + 4 deploys** (1 backend, 3 static apps), all from the SAME repo. All free.
 
 ---
 
-## Step 0 — code on GitHub (required)
-Render and Cloudflare can only deploy code that's on GitHub. You need 2 repos there:
-- `igaming` (this project — backend + player + admin)
-- `wrath-of-olympus` (the games)
-
-👉 I can commit + push both for you. Just say "push to GitHub" and give me the repo
-URLs (or "create new").
+## Step 0 — code on GitHub (DONE ✓)
+Everything (backend + player + admin + the 23 games in `cabinet/`) is already pushed to
+**github.com/LostWanderer63/Platform-new**. One repo, nothing else to push.
 
 ---
 
@@ -38,7 +36,7 @@ URLs (or "create new").
 ## Step 2 — Render (the backend)
 1. Go to **render.com** → sign up with GitHub.
 2. Top right **New +** → **Blueprint**.
-3. Pick the **igaming** repo → Render finds `render.yaml` automatically → **Apply**.
+3. Pick the **Platform-new** repo → Render finds `render.yaml` automatically → **Apply**.
 4. It will ask for the "sync: false" env values. Paste:
    - **DATABASE_URL** = the Neon string from Step 1
    - **JWT_ACCESS_SECRET** = `ea6830241ea3038bd6d171d9ee5bba7fa8b0cd7f988d894e5663a496005f4f3b831b6af7714ec1b4eef40bd53de378bf`
@@ -54,10 +52,11 @@ URLs (or "create new").
 
 ## Step 3 — Cloudflare Pages: GAMES
 1. Go to **dash.cloudflare.com** → sign up → left menu **Workers & Pages**.
-2. **Create** → **Pages** tab → **Connect to Git** → pick **wrath-of-olympus**.
+2. **Create** → **Pages** tab → **Connect to Git** → pick **Platform-new**.
 3. Settings:
    - Project name: **aurora-games**
    - Framework preset: **None**
+   - **Root directory (advanced): `cabinet`**
    - Build command: **`npm run build`**
    - Build output directory: **`dist`**
 4. **Save and Deploy**. When done, your URL is **https://aurora-games.pages.dev**.
@@ -65,7 +64,7 @@ URLs (or "create new").
 ---
 
 ## Step 4 — Cloudflare Pages: PLAYER
-1. **Workers & Pages → Create → Pages → Connect to Git** → pick **igaming**.
+1. **Workers & Pages → Create → Pages → Connect to Git** → pick **Platform-new**.
 2. Settings:
    - Project name: **aurora-player**
    - Framework preset: **None**
@@ -81,7 +80,7 @@ URLs (or "create new").
 
 ## Step 5 — Cloudflare Pages: ADMIN
 Same repo as the player, but a different folder.
-1. **Create → Pages → Connect to Git** → pick **igaming** again.
+1. **Create → Pages → Connect to Git** → pick **Platform-new** again.
 2. Settings:
    - Project name: **aurora-admin**
    - Framework preset: **None**

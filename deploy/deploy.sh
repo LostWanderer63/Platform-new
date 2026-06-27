@@ -8,7 +8,7 @@ set -a; . ./.env; set +a
 
 API_URL="https://api.${DOMAIN}/api"
 ROOT=".."                              # repo root (relative to deploy/)
-GAME_DIR="${GAME_DIR:-../../SlotGames/wrath-of-olympus}"
+GAME_DIR="${GAME_DIR:-../cabinet}"   # game cabinet vendored into the repo
 
 mkdir -p sites
 

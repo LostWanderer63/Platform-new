@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><defs><linearGradient id="mtFrame" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5a708c"/><stop offset="0.45" stop-color="#2c3c52"/><stop offset="0.55" stop-color="#46586f"/><stop offset="1" stop-color="#141d2b"/></linearGradient><radialGradient id="mtPanel" cx="0.5" cy="0.38" r="0.85"><stop offset="0" stop-color="#27374e"/><stop offset="0.6" stop-color="#16202f"/><stop offset="1" stop-color="#0a101a"/></radialGradient><linearGradient id="mtRim" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6cf"/><stop offset="0.5" stop-color="#d4af37"/><stop offset="1" stop-color="#7a5a10"/></linearGradient><filter id="mtShadow" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="12" stdDeviation="13" flood-color="#000000" flood-opacity="0.55"/></filter></defs>
+<g filter="url(#mtShadow)">
+  <rect x="22" y="20" width="468" height="468" rx="54" fill="url(#mtFrame)" stroke="#0a1018" stroke-width="4"/>
+  <rect x="36" y="34" width="440" height="440" rx="44" fill="none" stroke="url(#mtRim)" stroke-width="5" opacity="0.9"/>
+  <rect x="50" y="48" width="412" height="412" rx="36" fill="url(#mtPanel)"/>
+  <rect x="50" y="48" width="412" height="412" rx="36" fill="none" stroke="#0a1018" stroke-width="3" opacity="0.8"/>
+  <polygon points="256.0,173.0 346.0,263.0 256.0,353.0 166.0,263.0" fill="none" stroke="#060a10" stroke-width="10" stroke-linejoin="round" opacity="0.9"/><polygon points="256.0,162.0 346.0,252.0 256.0,342.0 166.0,252.0" fill="none" stroke="#7da4cc" stroke-width="10" stroke-linejoin="round" opacity="0.5"/><polygon points="256.0,166.0 346.0,256.0 256.0,346.0 166.0,256.0" fill="none" stroke="#3c5a78" stroke-width="10" stroke-linejoin="round" opacity="1"/>
+  <polygon points="256.0,196.0 316.0,256.0 256.0,316.0 196.0,256.0" fill="#1c2d42"/>
+  <polygon points="256.0,196.0 316.0,256.0 256.0,256.0" fill="#2c4662" opacity="0.9"/>
+  <path d="M70,136 Q256,54 442,136 L442,88 Q442,66 420,66 L92,66 Q70,66 70,88 Z" fill="#ffffff" opacity="0.06"/>
+</g></svg>

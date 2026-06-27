@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><defs><radialGradient id="mbBody" cx="0.36" cy="0.3" r="0.85"><stop offset="0" stop-color="#5a6474"/><stop offset="0.35" stop-color="#22262e"/><stop offset="0.8" stop-color="#0c0e14"/><stop offset="1" stop-color="#05060a"/></radialGradient><linearGradient id="mbCap" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6cf"/><stop offset="0.5" stop-color="#d4af37"/><stop offset="1" stop-color="#7a5a10"/></linearGradient><radialGradient id="mbFlame" cx="0.5" cy="0.6" r="0.7"><stop offset="0" stop-color="#ffffff"/><stop offset="0.35" stop-color="#ffe98a"/><stop offset="0.8" stop-color="#ff8a3d"/><stop offset="1" stop-color="#e8421c"/></radialGradient><filter id="mbGlow" x="-60%" y="-60%" width="220%" height="220%"><feDropShadow dx="0" dy="0" stdDeviation="14" flood-color="#ff9d3d" flood-opacity="0.95"/></filter><filter id="mbShadow" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="14" stdDeviation="12" flood-color="#000000" flood-opacity="0.6"/></filter></defs>
+<g filter="url(#mbShadow)">
+  <circle cx="256" cy="300" r="158" fill="url(#mbBody)"/>
+  <circle cx="256" cy="300" r="158" fill="none" stroke="#03040a" stroke-width="5"/>
+  <ellipse cx="200" cy="240" rx="52" ry="32" fill="#ffffff" opacity="0.35" transform="rotate(-28 200 240)"/>
+  <ellipse cx="300" cy="392" rx="70" ry="22" fill="#7da4cc" opacity="0.12"/>
+  <rect x="222" y="118" width="68" height="44" rx="12" fill="url(#mbCap)" stroke="#5e470c" stroke-width="4"/>
+  <path d="M256,120 C250,88 286,84 296,62" fill="none" stroke="#8a6a3a" stroke-width="13" stroke-linecap="round"/>
+  <g filter="url(#mbGlow)">
+    <path d="M296,62 C282,46 290,26 304,14 C306,32 322,34 324,50 C326,64 312,74 296,62 Z" fill="url(#mbFlame)"/>
+  </g>
+  <path d="M316 12 Q318.52 27.48 334 30 Q318.52 32.52 316 48 Q313.48 32.52 298 30 Q313.48 27.48 316 12Z" fill="#ffffff" opacity="0.95"/><path d="M180 212 Q181.96 224.04 194 226 Q181.96 227.96 180 240 Q178.04 227.96 166 226 Q178.04 224.04 180 212Z" fill="#ffffff" opacity="0.8"/>
+</g></svg>
