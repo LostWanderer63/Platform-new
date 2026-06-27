@@ -1,43 +1,55 @@
-import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { api, type ApiUser } from "@/lib/api";
 
 interface AuthState {
-  user: string | null;
+  user: ApiUser | null;
   isAuthed: boolean;
-  login: (name?: string) => void;
-  logout: () => void;
+  loading: boolean;
+  login: (identifier: string, password: string) => Promise<void>;
+  register: (data: { username: string; email: string; password: string }) => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 const Ctx = createContext<AuthState | null>(null);
-const KEY = "aurora_auth";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<string | null>(() => {
-    try {
-      return localStorage.getItem(KEY);
-    } catch {
-      return null;
-    }
-  });
+  const [user, setUser] = useState<ApiUser | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const login = useCallback((name = "Pruthvi") => {
-    setUser(name);
+  // hydrate session from the cookie on load
+  useEffect(() => {
+    api
+      .get<ApiUser>("/auth/me")
+      // only real players use the player app; ignore staff/distributor sessions
+      .then((u) => setUser(u.role === "USER" ? u : null))
+      .catch(() => setUser(null))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const login = useCallback(async (identifier: string, password: string) => {
+    const { user } = await api.post<{ user: ApiUser }>("/auth/login", { identifier, password });
+    setUser(user);
+  }, []);
+
+  const register = useCallback(async (data: { username: string; email: string; password: string }) => {
+    const { user } = await api.post<{ user: ApiUser }>("/auth/register", data);
+    setUser(user);
+  }, []);
+
+  const logout = useCallback(async () => {
     try {
-      localStorage.setItem(KEY, name);
+      await api.post("/auth/logout");
     } catch {
       /* ignore */
     }
-  }, []);
-
-  const logout = useCallback(() => {
     setUser(null);
-    try {
-      localStorage.removeItem(KEY);
-    } catch {
-      /* ignore */
-    }
   }, []);
 
-  return <Ctx.Provider value={{ user, isAuthed: !!user, login, logout }}>{children}</Ctx.Provider>;
+  return (
+    <Ctx.Provider value={{ user, isAuthed: !!user, loading, login, register, logout }}>
+      {children}
+    </Ctx.Provider>
+  );
 }
 
 export function useAuth(): AuthState {

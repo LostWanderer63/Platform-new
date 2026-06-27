@@ -10,7 +10,7 @@ module.exports = {
   parser: "@typescript-eslint/parser",
   parserOptions: { ecmaVersion: "latest", sourceType: "module" },
   plugins: ["@typescript-eslint", "react-refresh"],
-  ignorePatterns: ["dist", "node_modules", "scripts", "public", "*.config.*", "*.cjs"],
+  ignorePatterns: ["dist", "node_modules", "scripts", "public", "admin", "server", "*.config.*", "*.cjs"],
   rules: {
     // HMR-only nicety; off so utility/context exports don't warn
     "react-refresh/only-export-components": "off",

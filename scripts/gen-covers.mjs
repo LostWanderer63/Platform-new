@@ -25,6 +25,31 @@ const SLOTS = Array.from({ length: 8 }).map((_, i) => ({ id: `slot-${i}`, motif:
 const LIVE = Array.from({ length: 6 }).map((_, i) => ({ id: `live-${i}`, motif: "live", hue: hue(i + 21) }));
 const GAMES = [...ORIGINALS, ...SLOTS, ...LIVE];
 
+// --- Olympus cabinet (23 games, order matches the game's SLOTS[] / ?game=N) ---
+const slugify = (t) => t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+const OL_TITLES = [
+  "Wrath of Olympus", "Lucky 7s", "Gemstorm", "Pharaoh's Fortune", "Neon Plinko",
+  "Rocket Crash", "Crystal Mines", "Royal Blackjack", "Dragon Tower", "Lucky Dice",
+  "Neon Keno", "Cyber Coin Flip", "Jacks or Better", "Fortune Coins", "Sugar Storm",
+  "Turbo Derby", "Lucky Scratch", "Reef Hunter", "Dragon Sic Bo", "Royal Megaways",
+  "Bingo Blitz", "Jungle Swing", "Royal Baccarat",
+];
+const olMotif = (t) => {
+  const s = t.toLowerCase();
+  if (s.includes("crash")) return "rocket";
+  if (s.includes("mines")) return "mines";
+  if (s.includes("plinko")) return "plinko";
+  if (s.includes("dice") || s.includes("sic bo")) return "dice";
+  if (s.includes("blackjack") || s.includes("baccarat") || s.includes("jacks")) return "cards";
+  if (s.includes("coin")) return "coin";
+  if (s.includes("derby")) return "wheel";
+  if (s.includes("keno") || s.includes("bingo") || s.includes("reef")) return "live";
+  return "slots";
+};
+const OLYMPUS = OL_TITLES.map((title, i) => ({
+  id: `olympus/${slugify(title)}`, motif: olMotif(title), hue: (i * 41) % 360, title,
+}));
+
 const W = 600, H = 800;
 const GOLD = "#f0c46e";
 
@@ -110,25 +135,36 @@ function buildSvg(g) {
       <radialGradient id="b2" cx="100%" cy="105%" r="90%"><stop offset="0%" stop-color="${bgB}" stop-opacity="0.85"/><stop offset="55%" stop-color="${bgB}" stop-opacity="0"/></radialGradient>
       <linearGradient id="b3" x1="0" y1="0" x2="0.4" y2="1"><stop offset="0%" stop-color="hsl(${g.hue} 45% 16%)"/><stop offset="100%" stop-color="#15192a"/></linearGradient>
       <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffffff" stop-opacity="0.10"/><stop offset="45%" stop-color="#ffffff" stop-opacity="0"/><stop offset="100%" stop-color="#06070d" stop-opacity="0.45"/></linearGradient>
+      <linearGradient id="tb" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#06070d" stop-opacity="0"/><stop offset="100%" stop-color="#06070d" stop-opacity="0.92"/></linearGradient>
     </defs>
     <rect width="${W}" height="${H}" fill="url(#b3)"/>
     <rect width="${W}" height="${H}" fill="url(#b1)"/>
     <rect width="${W}" height="${H}" fill="url(#b2)"/>
     <g transform="translate(${tx} ${ty}) scale(${scale})" filter="url(#none)">${motif(g.motif, a, a2)}</g>
     <rect width="${W}" height="${H}" fill="url(#sheen)"/>
+    ${g.title ? titleBanner(g.title) : ""}
   </svg>`;
+}
+
+const xmlEsc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+function titleBanner(title) {
+  const size = title.length > 14 ? 34 : 42;
+  return `<rect x="0" y="${H - 190}" width="${W}" height="190" fill="url(#tb)"/>
+    <text x="${W / 2}" y="${H - 56}" text-anchor="middle" font-family="'Helvetica Neue',Arial,sans-serif" font-weight="800" font-size="${size}" fill="#ffffff" letter-spacing="0.5">${xmlEsc(title)}</text>
+    <rect x="${W / 2 - 34}" y="${H - 40}" width="68" height="4" rx="2" fill="${GOLD}"/>`;
 }
 
 async function main() {
   await mkdir(OUT, { recursive: true });
+  await mkdir(join(OUT, "olympus"), { recursive: true });
   let n = 0;
-  for (const g of GAMES) {
+  for (const g of [...GAMES, ...OLYMPUS]) {
     const svg = buildSvg(g);
     const png = await sharp(Buffer.from(svg)).png({ quality: 90 }).toBuffer();
     await writeFile(join(OUT, `${g.id}.png`), png);
     n++;
   }
-  console.log(`✓ generated ${n} PNG covers -> public/games/`);
+  console.log(`✓ generated ${n} PNG covers -> public/games/ (incl. ${OLYMPUS.length} Olympus)`);
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });

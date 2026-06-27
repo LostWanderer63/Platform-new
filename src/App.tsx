@@ -1,22 +1,21 @@
 import { Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AppShell } from "./components/layout/AppShell";
-import { RequireAuth } from "./components/layout/RequireAuth";
-import { ScrollToTop } from "./components/layout/ScrollToTop";
+import { AppShell } from "@/components/layout/AppShell";
+import { RequireAuth } from "@/components/layout/RequireAuth";
+import { ScrollToTop } from "@/components/layout/ScrollToTop";
 
 /* Route-level code splitting — each page ships in its own chunk. */
-const Landing = lazy(() => import("./pages/Landing").then((m) => ({ default: m.Landing })));
-const Login = lazy(() => import("./pages/Login").then((m) => ({ default: m.Login })));
-const Register = lazy(() => import("./pages/Register").then((m) => ({ default: m.Register })));
-const Home = lazy(() => import("./pages/Home").then((m) => ({ default: m.Home })));
-const Casino = lazy(() => import("./pages/Casino").then((m) => ({ default: m.Casino })));
-const GamePage = lazy(() => import("./pages/GamePage").then((m) => ({ default: m.GamePage })));
-const Sports = lazy(() => import("./pages/Sports").then((m) => ({ default: m.Sports })));
-const Wallet = lazy(() => import("./pages/Wallet").then((m) => ({ default: m.Wallet })));
-const Profile = lazy(() => import("./pages/Profile").then((m) => ({ default: m.Profile })));
-const Settings = lazy(() => import("./pages/Settings").then((m) => ({ default: m.Settings })));
-const Admin = lazy(() => import("./pages/Admin").then((m) => ({ default: m.Admin })));
-const NotFound = lazy(() => import("./pages/NotFound").then((m) => ({ default: m.NotFound })));
+const Landing = lazy(() => import("@/features/landing/Landing").then((m) => ({ default: m.Landing })));
+const Login = lazy(() => import("@/features/auth/Login").then((m) => ({ default: m.Login })));
+const Register = lazy(() => import("@/features/auth/Register").then((m) => ({ default: m.Register })));
+const Home = lazy(() => import("@/features/home/Home").then((m) => ({ default: m.Home })));
+const Casino = lazy(() => import("@/features/casino/Casino").then((m) => ({ default: m.Casino })));
+const GamePage = lazy(() => import("@/features/game/GamePage").then((m) => ({ default: m.GamePage })));
+const Sports = lazy(() => import("@/features/sports/Sports").then((m) => ({ default: m.Sports })));
+const Wallet = lazy(() => import("@/features/wallet/Wallet").then((m) => ({ default: m.Wallet })));
+const Profile = lazy(() => import("@/features/profile/Profile").then((m) => ({ default: m.Profile })));
+const Settings = lazy(() => import("@/features/settings/Settings").then((m) => ({ default: m.Settings })));
+const NotFound = lazy(() => import("@/features/misc/NotFound").then((m) => ({ default: m.NotFound })));
 
 function PageLoader() {
   return (
@@ -66,14 +65,6 @@ export default function App() {
               element={
                 <RequireAuth>
                   <Settings />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/admin"
-              element={
-                <RequireAuth>
-                  <Admin />
                 </RequireAuth>
               }
             />

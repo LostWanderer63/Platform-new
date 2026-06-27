@@ -1,0 +1,44 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-base text-ink font-sans antialiased;
+  }
+  :focus-visible {
+    outline: 2px solid theme("colors.accent");
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-xl border border-line bg-panel;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn bg-accent text-white hover:bg-accent/90;
+  }
+  .btn-ghost {
+    @apply btn border border-line text-mut hover:text-ink hover:border-mut;
+  }
+  .btn-bad {
+    @apply btn bg-bad/90 text-white hover:bg-bad;
+  }
+  .input {
+    @apply h-10 w-full rounded-lg border border-line bg-panel2 px-3 text-sm text-ink placeholder:text-mut focus:border-accent focus:outline-none;
+  }
+  .th {
+    @apply px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-wider text-mut;
+  }
+  .td {
+    @apply px-3 py-2.5 text-sm;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide;
+  }
+}

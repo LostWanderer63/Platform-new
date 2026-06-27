@@ -1,0 +1,50 @@
+{
+  "name": "aurora-api",
+  "version": "0.1.0",
+  "description": "Aurora iGaming platform — backend API (NestJS + Prisma + Postgres)",
+  "private": true,
+  "scripts": {
+    "build": "nest build",
+    "start": "node dist/main",
+    "start:dev": "nest start --watch",
+    "start:prod": "node dist/main",
+    "lint": "eslint \"src/**/*.ts\" --max-warnings 0",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "db:seed": "ts-node prisma/seed.ts",
+    "db:up": "docker compose up -d db",
+    "db:down": "docker compose down"
+  },
+  "dependencies": {
+    "@nestjs/common": "^10.4.4",
+    "@nestjs/config": "^3.2.3",
+    "@nestjs/core": "^10.4.4",
+    "@nestjs/event-emitter": "^2.1.1",
+    "@nestjs/jwt": "^10.2.0",
+    "@nestjs/platform-express": "^10.4.4",
+    "@nestjs/platform-socket.io": "^10.4.22",
+    "@nestjs/throttler": "^6.2.1",
+    "@nestjs/websockets": "^10.4.22",
+    "@prisma/client": "^5.20.0",
+    "argon2": "^0.41.1",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
+    "cookie-parser": "^1.4.7",
+    "helmet": "^8.0.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1",
+    "socket.io": "^4.8.3"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^10.4.5",
+    "@nestjs/schematics": "^10.1.4",
+    "@types/cookie-parser": "^1.4.7",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.7.4",
+    "prisma": "^5.20.0",
+    "socket.io-client": "^4.8.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.2"
+  }
+}

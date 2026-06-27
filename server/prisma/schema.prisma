@@ -1,0 +1,338 @@
+// Aurora iGaming — data model
+// Money is NEVER float: all balances/amounts use Decimal (Postgres numeric).
+// The LedgerEntry table is the source of truth for balances (append-only).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------- enums
+enum Role {
+  USER
+  MODERATOR
+  ADMIN
+  DISTRIBUTOR
+  SUB_DISTRIBUTOR
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  SELF_EXCLUDED
+}
+
+enum KycStatus {
+  NONE
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum LedgerType {
+  DEPOSIT
+  WITHDRAWAL
+  BET
+  WIN
+  BONUS
+  ADJUSTMENT
+  REFUND
+}
+
+enum TxType {
+  DEPOSIT
+  WITHDRAWAL
+}
+
+enum TxStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum GameKind {
+  CRASH
+  DICE
+  MINES
+  PLINKO
+  ROULETTE
+  WHEEL
+  COINFLIP
+  BLACKJACK
+  SLOTS
+  LIVE
+}
+
+enum BetStatus {
+  PENDING
+  WON
+  LOST
+  CASHED_OUT
+  CANCELLED
+}
+
+enum RoundStatus {
+  OPEN
+  RUNNING
+  SETTLED
+  CANCELLED
+}
+
+enum RgLimitType {
+  DEPOSIT_DAILY
+  DEPOSIT_WEEKLY
+  LOSS_DAILY
+  LOSS_WEEKLY
+  WAGER_DAILY
+  SESSION_MINUTES
+}
+
+// ---------------------------------------------------------------- core
+model User {
+  id           String     @id @default(uuid())
+  email        String     @unique
+  username     String     @unique
+  passwordHash String
+  role         Role       @default(USER)
+  status       UserStatus @default(ACTIVE)
+  kycStatus    KycStatus  @default(NONE)
+
+  level Int @default(1)
+  xp    Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  wallet        Wallet?
+  ledgerEntries LedgerEntry[]
+  transactions  Transaction[]
+  bets          Bet[]
+  seeds         ProvablyFairSeed[]
+  sessions      Session[]
+  rgLimits      RgLimit[]
+  auditLogs     AuditLog[]         @relation("ActorLogs")
+  distributorAccount Distributor?  @relation("DistributorAccount")
+
+  // the distributor this player belongs to (for portal scoping)
+  distributorId String?
+  distributor   Distributor?       @relation("DistributorPlayers", fields: [distributorId], references: [id])
+
+  @@index([status])
+  @@index([distributorId])
+}
+
+model Wallet {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currency  String   @default("USD")
+  // cached running balance; LedgerEntry is the source of truth
+  balance   Decimal  @default(0) @db.Decimal(18, 2)
+  bonus     Decimal  @default(0) @db.Decimal(18, 2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  entries LedgerEntry[]
+}
+
+// append-only money ledger — every balance change writes a row
+model LedgerEntry {
+  id           String     @id @default(uuid())
+  walletId     String
+  wallet       Wallet     @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type         LedgerType
+  amount       Decimal    @db.Decimal(18, 2) // signed: credit > 0, debit < 0
+  balanceAfter Decimal    @db.Decimal(18, 2)
+  refType      String? // "bet" | "transaction" | "bonus" | ...
+  refId        String?
+  meta         Json?
+  createdAt    DateTime   @default(now())
+
+  @@index([userId, createdAt])
+  @@index([refType, refId])
+}
+
+model Transaction {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        TxType
+  status      TxStatus @default(PENDING)
+  method      String // "visa" | "bank" | "paypal" | ...
+  amount      Decimal  @db.Decimal(18, 2)
+  provider    String? // payment provider id
+  providerRef String? // external reference
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([status])
+}
+
+// ---------------------------------------------------------------- games / fairness
+model ProvablyFairSeed {
+  id             String    @id @default(uuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  serverSeed     String // revealed only after rotation
+  serverSeedHash String // sha256(serverSeed) shown up-front
+  clientSeed     String
+  nonce          Int       @default(0)
+  active         Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  revealedAt     DateTime?
+
+  bets Bet[]
+
+  @@index([userId, active])
+}
+
+// crash-style shared rounds (multiple players per round)
+model GameRound {
+  id             String      @id @default(uuid())
+  game           GameKind
+  serverSeedHash String
+  serverSeed     String?
+  nonce          Int         @default(0)
+  status         RoundStatus @default(OPEN)
+  outcome        Json? // e.g. { crashPoint: 2.41 }
+  startedAt      DateTime?
+  settledAt      DateTime?
+  createdAt      DateTime    @default(now())
+
+  bets Bet[]
+
+  @@index([game, status])
+}
+
+model Bet {
+  id         String    @id @default(uuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game       GameKind
+  amount     Decimal   @db.Decimal(18, 2)
+  payout     Decimal   @default(0) @db.Decimal(18, 2)
+  multiplier Decimal   @default(0) @db.Decimal(12, 4)
+  status     BetStatus @default(PENDING)
+
+  clientSeed String
+  nonce      Int
+  seedId     String?
+  seed       ProvablyFairSeed? @relation(fields: [seedId], references: [id])
+  roundId    String?
+  round      GameRound?        @relation(fields: [roundId], references: [id])
+
+  params   Json? // game inputs (target, mines count, cashout, ...)
+  outcome  Json? // game result
+  createdAt  DateTime  @default(now())
+  settledAt  DateTime?
+
+  @@index([userId, createdAt])
+  @@index([game, createdAt])
+}
+
+// ---------------------------------------------------------------- accounts / safety
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String // hash of the refresh token
+  userAgent String?
+  ip        String?
+  revoked   Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([tokenHash])
+}
+
+model RgLimit {
+  id        String      @id @default(uuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      RgLimitType
+  amount    Decimal     @db.Decimal(18, 2)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@unique([userId, type])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  actorId   String?
+  actor     User?    @relation("ActorLogs", fields: [actorId], references: [id])
+  action    String
+  target    String?
+  meta      Json?
+  ip        String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+// ---------------------------------------------------------------- game catalog (admin-managed)
+enum GameStatus {
+  ACTIVE
+  PAUSED
+  MAINTENANCE
+  DISABLED
+}
+
+model Game {
+  id        String     @id @default(uuid())
+  slug      String     @unique
+  name      String
+  category  String // "Originals" | "Slots" | "Live" | "Table"
+  provider  String
+  kind      GameKind
+  status    GameStatus @default(ACTIVE)
+  hot       Boolean    @default(false)
+  live      Boolean    @default(false)
+  hue       Int        @default(200)
+  order     Int        @default(0)
+  rtp       Decimal?   @db.Decimal(5, 2)
+  imageUrl  String?
+  launchUrl String? // external client URL (iframe). null = built-in demo client
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([status])
+  @@index([category])
+}
+
+// ---------------------------------------------------------------- distributor hierarchy
+enum DistributorStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+// top-level = Distributor (parentId null); with a parent = Sub-distributor.
+model Distributor {
+  id            String            @id @default(uuid())
+  name          String
+  code          String            @unique
+  parentId      String?
+  parent        Distributor?      @relation("Hierarchy", fields: [parentId], references: [id])
+  children      Distributor[]     @relation("Hierarchy")
+  status        DistributorStatus @default(ACTIVE)
+  commissionPct Decimal           @default(0) @db.Decimal(5, 2)
+  balance       Decimal           @default(0) @db.Decimal(18, 2)
+  contactEmail  String?
+  // optional linked login account (role DISTRIBUTOR / SUB_DISTRIBUTOR)
+  userId        String?           @unique
+  user          User?             @relation("DistributorAccount", fields: [userId], references: [id])
+  players       User[]            @relation("DistributorPlayers")
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@index([parentId])
+}
