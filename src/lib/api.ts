@@ -2,7 +2,8 @@
    Cookies carry the session (credentials: "include"); on a 401 we try one
    silent refresh before giving up. */
 
-export const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:4000/api";
+const rawApiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:4000/api";
+export const API_BASE = rawApiUrl.endsWith("/api") ? rawApiUrl : `${rawApiUrl.replace(/\/$/, "")}/api`;
 export const API_ORIGIN = API_BASE.replace(/\/api\/?$/, "");
 
 export class ApiError extends Error {
