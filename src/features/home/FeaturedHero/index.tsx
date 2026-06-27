@@ -151,7 +151,7 @@ export function FeaturedHero() {
 
       {/* controls */}
       {slides.length > 1 && (
-        <div className="absolute bottom-6 right-6 z-raised flex items-center gap-2">
+        <div className="absolute top-6 right-6 z-raised flex items-center gap-2 sm:top-auto sm:bottom-6 sm:right-6">
           <div className="flex gap-1.5">
             {slides.map((_, n) => (
               <button
